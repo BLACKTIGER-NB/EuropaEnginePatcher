@@ -4382,7 +4382,7 @@ namespace EuropaEnginePatcher
                     PatchByte(_data, offset, 0x17);
                     break;
 
-                case PatchType.ArsenalOfDemocracy112:
+                case PatchType.ArsenalOfDemocracy112: // pop edi
                 case PatchType.ArsenalOfDemocracy110:
                 case PatchType.ArsenalOfDemocracy109:
                     PatchByte(_data, offset, 0x16);
@@ -6249,6 +6249,15 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.ArsenalOfDemocracy112:
+                    // TODO: TBD
+                    // mov ecx, dword ptr [ebp - 14h];
+                    // dec ecx;
+                    // mov dword ptr [ebp - 14h], ecx;
+                    // push ecx
+                    // lea eax, [ebp - 220h];
+                    // push ecx
+                    break;
+
                 case PatchType.ArsenalOfDemocracy110:
                     PatchByte(_data, offset, 0x8D); // lea esi,[esi-01h]
                     offset++;
@@ -6578,6 +6587,13 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.ArsenalOfDemocracy112:
+                    // TODO:
+                    // mov ecx, [ebp - 14h];
+                    // add ecx, eax;
+                    // mov [ebp - 14h], ecx;
+                    // lea eax, [ebp-620h];
+                    break;
+
                 case PatchType.ArsenalOfDemocracy110:
                     PatchByte(_data, offset, 0x01); // add esi,eax
                     offset++;
