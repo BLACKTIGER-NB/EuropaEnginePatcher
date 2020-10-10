@@ -26,7 +26,7 @@ jobs:
       uses: warrenbuckley/Setup-MSBuild@v1
 
     - name: Build source
-      run: msbuild EuropaEnginePatcher.sln -p:Configuration=release -p:platform=AnyCPU
+      run: msbuild EuropaEnginePatcher.sln -p:Configuration=release -p:platform"=Any CPU"
       shell: cmd
     
     - name: Make artifact package
