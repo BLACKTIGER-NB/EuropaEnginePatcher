@@ -2733,18 +2733,18 @@ namespace EuropaEnginePatcher
                     {
                         return false;
                     }
-                    _posGetArmyName1 = l[0] + 7;
+                    _posGetArmyName1 = l[0];
 
                     pattern = new byte[]
                     {
-                        0x83, 0xC4, 0x08, 0x6A, 0x20
+                        0xE8, 0xBE, 0xA6, 0xED, 0xFF // call    sub_4327B0
                     };
                     l = BinaryScan(_data, pattern, _posTextSection, _sizeTextSection);
                     if (l.Count == 0)
                     {
                         return false;
                     }
-                    _posGetArmyName2 = l[0] + 3;
+                    _posGetArmyName2 = l[0] + 5; // mov     dl, 20h
                     break;
 
                 case PatchType.ArsenalOfDemocracy110:
@@ -2759,18 +2759,19 @@ namespace EuropaEnginePatcher
                     {
                         return false;
                     }
-                    _posGetArmyName1 = l[0] + 7;
+                    _posGetArmyName1 = l[0] + 7; // mov     ecx, [ebp+arg_0]
 
                     pattern = new byte[]
                     {
-                        0x83, 0xC4, 0x08, 0x6A, 0x20
+                        0x83, 0xC4, 0x08, // add esp, 8
+                        0x6A, 0x20 // push 20h
                     };
                     l = BinaryScan(_data, pattern, _posTextSection, _sizeTextSection);
                     if (l.Count == 0)
                     {
                         return false;
                     }
-                    _posGetArmyName2 = l[0] + 3;
+                    _posGetArmyName2 = l[0] + 3; // push 20h
                     break;
             }
 
@@ -7638,11 +7639,67 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.ArsenalOfDemocracy112:
-                case PatchType.ArsenalOfDemocracy110:
-                    uint addrBufOrdinal = GetLong(_posGetArmyName1 + 5);
-                    uint addrPutNumber = GetLong(_posGetArmyName1 + 11);
+                    uint addrBufOrdinal1 = GetLong(_posGetArmyName1 + 5); // offset xxxxx
+                    uint addrPutNumber1 = GetLong(_posGetArmyName1 + 11); // std::basic_ostream<char,std::char_traits<char>>::operator<<(uint)
                     offset = _posGetArmyName1;
-                    PatchByte(_data, offset, 0xEB); // jmp GET_ORDINAL_SUFFIX
+                    PatchByte(_data, offset, 0xEB); // jmp GET_ORDINAL_SUFFIX // goto mov     eax, [ebp+arg_0]
+                    offset++;
+                    PatchByte(_data, offset, 0x0D); // 変更なし
+                    offset++;
+                    PatchByte(_data, offset, 0x90); // nop
+                    offset++;
+                    PatchByte(_data, offset, 0x90); // nop
+                    offset++;
+                    PatchByte(_data, offset, 0x90); // nop
+                    offset++;
+                    PatchByte(_data, offset, 0x90); // nop
+                    offset++;
+                    PatchByte(_data, offset, 0x90); // nop
+                    offset++;
+                    PatchByte(_data, offset, 0x90); // nop
+                    offset++;
+                    PatchByte(_data, offset, 0x90); // nop
+                    offset++;
+                    PatchByte(_data, offset, 0x90); // nop
+                    offset++;
+                    PatchByte(_data, offset, 0x90); // nop
+                    offset++;
+                    PatchByte(_data, offset, 0x90); // nop
+                    offset++;
+                    PatchByte(_data, offset, 0x90); // nop
+                    offset++;
+                    PatchByte(_data, offset, 0x90); // nop
+                    offset++;
+                    PatchByte(_data, offset, 0x90); // nop
+
+                    offset = _posGetArmyName2;
+                    PatchByte(_data, offset, 0x8B); // mov ecx,[ebp+08h] // arg_0
+                    offset++;
+                    PatchByte(_data, offset, 0x4D);
+                    offset++;
+                    PatchByte(_data, offset, 0x08);
+                    offset++;
+                    PatchByte(_data, offset, 0x51); // push ecx
+                    offset++;
+                    PatchByte(_data, offset, 0xB9); // mov ecx,addrBufOrdinal
+                    offset++;
+                    PatchLong(_data, offset, addrBufOrdinal1, $"%XX ${addrBufOrdinal1:X8} addrBufOrdinal");
+                    offset += 4;
+                    PatchByte(_data, offset, 0xFF); // call PutNumber
+                    offset++;
+                    PatchByte(_data, offset, 0x15);
+                    offset++;
+                    PatchLong(_data, offset, addrPutNumber1, $"%XX ${addrPutNumber1:X8} addrPutNumber");
+
+                    // TODO : ここは領域が足りなくて上書きできない
+
+                    break;
+
+                case PatchType.ArsenalOfDemocracy110:
+                    uint addrBufOrdinal = GetLong(_posGetArmyName1 + 5); // offset xxxxx
+                    uint addrPutNumber = GetLong(_posGetArmyName1 + 11); // std::basic_ostream<char,std::char_traits<char>>::operator<<(uint)
+                    offset = _posGetArmyName1;
+                    PatchByte(_data, offset, 0xEB); // jmp GET_ORDINAL_SUFFIX // goto mov     eax, [ebp+arg_0]
                     offset++;
                     PatchByte(_data, offset, 0x0D);
                     offset++;
@@ -7673,7 +7730,7 @@ namespace EuropaEnginePatcher
                     PatchByte(_data, offset, 0x90); // nop
 
                     offset = _posGetArmyName2;
-                    PatchByte(_data, offset, 0x8B); // mov ecx,[ebp+08h]
+                    PatchByte(_data, offset, 0x8B); // mov ecx,[ebp+08h] // arg_0
                     offset++;
                     PatchByte(_data, offset, 0x4D);
                     offset++;
@@ -7690,6 +7747,9 @@ namespace EuropaEnginePatcher
                     PatchByte(_data, offset, 0x15);
                     offset++;
                     PatchLong(_data, offset, addrPutNumber, $"%XX ${addrPutNumber:X8} addrPutNumber");
+
+                    // mov     ecx, [ebp+var_C]
+
                     break;
             }
 
