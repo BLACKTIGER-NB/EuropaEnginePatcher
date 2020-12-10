@@ -7675,10 +7675,13 @@ namespace EuropaEnginePatcher
         /// </summary>
         private static void Patch4Gb()
         {
-            const uint offset = 0x00000126;
+            // 位置については下記のURLの図を参照
+            // https://qiita.com/cha1aza/items/f64dc4351517a2477ef1
+            uint offset = _posPeHeader + 0x16;
 
             AppendLog("  4GBメモリ使用設定\n");
 
+            // LARGE_ADDRESS_AWAREを設定
             PatchByte(_data, offset, (byte) (_data[offset] | 0x20));
 
             AppendLog("\n");
