@@ -23,7 +23,7 @@ jobs:
       run: nuget restore EuropaEnginePatcher.sln
 
     - name: Setup MSBuild.exe
-      uses: warrenbuckley/Setup-MSBuild@v1
+      uses: microsoft/setup-msbuild@v1.0.2
 
     - name: Build source
       run: msbuild EuropaEnginePatcher.sln -p:Configuration=release -p:platform"=Any CPU"
