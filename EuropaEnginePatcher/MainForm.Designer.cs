@@ -187,6 +187,7 @@
             this.color16BitCheckBox.Size = new System.Drawing.Size(100, 16);
             this.color16BitCheckBox.TabIndex = 8;
             this.color16BitCheckBox.Text = "16bitカラー設定";
+            this.mainToolTip.SetToolTip(this.color16BitCheckBox, "レジストリに16bitカラー互換性の設定を書き込みます。");
             this.color16BitCheckBox.UseVisualStyleBackColor = true;
             this.color16BitCheckBox.CheckedChanged += new System.EventHandler(this.OnColor16BitCheckBoxCheckedChanged);
             // 
@@ -198,6 +199,7 @@
             this.memory4GbCheckBox.Size = new System.Drawing.Size(94, 16);
             this.memory4GbCheckBox.TabIndex = 7;
             this.memory4GbCheckBox.Text = "4GBメモリ使用";
+            this.mainToolTip.SetToolTip(this.memory4GbCheckBox, "LARGE_ADDRESS_AWAREフラグをONにします。\r\n4GBまでのメモリを使用できるかもしれません。");
             this.memory4GbCheckBox.UseVisualStyleBackColor = true;
             this.memory4GbCheckBox.CheckedChanged += new System.EventHandler(this.OnMemory4GbCheckBoxCheckedChanged);
             // 
