@@ -3,3 +3,5 @@ EuropaEnginePatcher/bin
 EuropaEnginePatcher/obj
 
 /*.user
+/.vs
+/EuropaEnginePatcher/Backup*.*

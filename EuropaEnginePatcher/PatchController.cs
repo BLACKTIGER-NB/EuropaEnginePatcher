@@ -347,25 +347,36 @@ namespace EuropaEnginePatcher
             }
 
             string s = (string) key.GetValue(fileName);
+
+            //レジストリ記述
             if (!string.IsNullOrEmpty(s))
             {
-                // 16bitカラーの記述が含まれていれば何もしない
-                if (s.Contains("16BITCOLOR"))
-                {
-                    return;
-                }
-
-                // 既に設定されている項目があれば連結する
-                if (s.StartsWith("~ "))
+                // 16bitカラーの記述が含まれていなければ追加
+                if (!s.Contains("16BITCOLOR"))
                 {
                     s += " 16BITCOLOR";
-                    key.SetValue(fileName, s);
-                    return;
+                } 
+                
+                // 8、16ビットの表示カラーモードで動作するアプリケーションの軽減の記述が含まれていなければ追加
+                if (!s.Contains("DWM8And16BitMitigation"))
+                {
+                    s += " DWM8And16BitMitigation";
                 }
+                
+                // 高DPI設定で画面のスケーリングを無効にする記述が含まれていなければ追加
+                if (!s.Contains("HIGHDPIAWARE"))
+                {
+                    s += " HIGHDPIAWARE";
+                }
+
+                // すでに設定されている項目へ連結する
+                key.SetValue(fileName, s);
+                return;
             }
 
-            // 16bitカラーの設定を追加する
-            key.SetValue(fileName, "~ 16BITCOLOR");
+
+            // 上記三種を追加する
+            key.SetValue(fileName, "~ DWM8And16BitMitigation 16BITCOLOR HIGHDPIAWARE");
         }
 
         #endregion

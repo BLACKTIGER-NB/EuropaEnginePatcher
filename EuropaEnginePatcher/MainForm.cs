@@ -72,9 +72,10 @@ namespace EuropaEnginePatcher
             }
 
             // 64bitOSならば4GBメモリ使用を有効にする
+            // 標準ではチェックをしない
             if (Is64BitOs())
             {
-                memory4GbCheckBox.Checked = true;
+                memory4GbCheckBox.Checked = false;
             }
             else
             {
@@ -171,6 +172,8 @@ namespace EuropaEnginePatcher
             windowedCheckBox.Checked = false;
             introSkipCheckBox.Checked = false;
             ntlCheckBox.Checked = false;
+
+            memory4GbCheckBox.Checked = false;
 
             saveButton.Enabled = false;
         }
