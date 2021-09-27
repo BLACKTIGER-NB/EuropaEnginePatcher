@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31702.278
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EuropaEnginePatcher", "EuropaEnginePatcher\EuropaEnginePatcher.csproj", "{6BAE8813-8980-451F-ACD7-E9523DD6FB25}"
 EndProject
 Global
@@ -15,8 +17,8 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{6BAE8813-8980-451F-ACD7-E9523DD6FB25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6BAE8813-8980-451F-ACD7-E9523DD6FB25}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6BAE8813-8980-451F-ACD7-E9523DD6FB25}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{6BAE8813-8980-451F-ACD7-E9523DD6FB25}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6BAE8813-8980-451F-ACD7-E9523DD6FB25}.Debug|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6BAE8813-8980-451F-ACD7-E9523DD6FB25}.Debug|Mixed Platforms.Build.0 = Release|Any CPU
 		{6BAE8813-8980-451F-ACD7-E9523DD6FB25}.Debug|Win32.ActiveCfg = Debug|Any CPU
 		{6BAE8813-8980-451F-ACD7-E9523DD6FB25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6BAE8813-8980-451F-ACD7-E9523DD6FB25}.Release|Any CPU.Build.0 = Release|Any CPU
@@ -26,5 +28,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {73D0C9D2-B421-4455-8E98-C23588DB17B8}
 	EndGlobalSection
 EndGlobal
