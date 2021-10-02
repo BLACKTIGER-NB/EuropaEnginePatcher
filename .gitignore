@@ -4,4 +4,6 @@ EuropaEnginePatcher/obj
 
 /*.user
 /.vs
+/EuropaEnginePatcher/*.bak
 /EuropaEnginePatcher/Backup*.*
+Backup*.*
