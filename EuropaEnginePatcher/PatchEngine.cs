@@ -319,11 +319,25 @@ namespace EuropaEnginePatcher
                         l = BinaryScan(_data, pattern, 0, (uint) _fileSize);
                         if (l.Count == 0)
                         {
-                            return false;
+                            // Hoi2 vX.X
+                            pattern = new byte[]
+                            {
+                                0x48, 0x6F, 0x69, 0x32, 0x20, 0x76
+                            };
+                            l = BinaryScan(_data, pattern, 0, (uint) _fileSize);
+                            //無印のバージョン番号を暫定的に0.8(80)と設定する
+                            _gameVersion = 80;
+                            if (l.Count == 0)
+                            {
+                                return false;
+                            }
                         }
-                        offset = l[0] + (uint) pattern.Length;
-                        _gameVersion = (_data[offset] - '0') * 100 + (_data[offset + 2] - '0') * 10 +
-                                       (_data[offset + 3] - '0');
+                        else
+                        {
+                            offset = l[0] + (uint) pattern.Length;
+                            _gameVersion = (_data[offset] - '0') * 100 + (_data[offset + 2] - '0') * 10 +
+                                           (_data[offset + 3] - '0');
+                        }
                     }
                     else
                     {
@@ -401,7 +415,12 @@ namespace EuropaEnginePatcher
             switch (_patchType)
             {
                 case PatchType.HeartsOfIron2:
-                    if (_gameVersion < 110)
+                    if (_gameVersion <= 80)
+                    {
+                        _patchType = PatchType.HeartsOfIron2first;
+                        AppendLog("PatchType: Hearts of Iron 2 (first)\n\n");
+                    }
+                    else if (_gameVersion < 110)
                     {
                         _patchType = PatchType.IronCrossHoI2;
                         AppendLog("PatchType: Iron Cross / Hearts of Iron 2\n\n");
@@ -951,6 +970,7 @@ namespace EuropaEnginePatcher
                     case PatchType.HeartsOfIron:
                     case PatchType.HeartsOfIron2:
                     case PatchType.HeartsOfIron212:
+                    case PatchType.HeartsOfIron2first:
                     case PatchType.IronCrossHoI2:
                     case PatchType.ArsenalOfDemocracy104:
                     case PatchType.ArsenalOfDemocracy107:
@@ -999,6 +1019,7 @@ namespace EuropaEnginePatcher
                     case PatchType.HeartsOfIron:
                     case PatchType.HeartsOfIron2:
                     case PatchType.HeartsOfIron212:
+                    case PatchType.HeartsOfIron2first:
                         if (!ScanWindowed())
                         {
                             return false;
@@ -1020,6 +1041,7 @@ namespace EuropaEnginePatcher
                     case PatchType.HeartsOfIron:
                     case PatchType.HeartsOfIron2:
                     case PatchType.HeartsOfIron212:
+                    case PatchType.HeartsOfIron2first:
                     case PatchType.IronCrossHoI2:
                         if (!ScanIntroSkip())
                         {
@@ -1039,6 +1061,7 @@ namespace EuropaEnginePatcher
                     case PatchType.HeartsOfIron:
                     case PatchType.HeartsOfIron2:
                     case PatchType.HeartsOfIron212:
+                    case PatchType.HeartsOfIron2first:
                         if (!ScanNtl())
                         {
                             return false;
@@ -1065,6 +1088,7 @@ namespace EuropaEnginePatcher
             {
                 case PatchType.HeartsOfIron2:
                 case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.IronCrossHoI2:
                 case PatchType.ArsenalOfDemocracy:
                 case PatchType.ArsenalOfDemocracy104:
@@ -1164,6 +1188,7 @@ namespace EuropaEnginePatcher
             {
                 case PatchType.HeartsOfIron2:
                 case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.IronCrossHoI2:
                 case PatchType.ArsenalOfDemocracy104:
                 case PatchType.DarkestHour:
@@ -1580,6 +1605,7 @@ namespace EuropaEnginePatcher
 
                 case PatchType.Victoria:
                 case PatchType.HeartsOfIron:
+                case PatchType.HeartsOfIron2first:
                     pattern = new byte[]
                     {
                         0x8A, 0x4C, 0x24, 0x13, 0x88, 0x8C, 0x04, 0x14,
@@ -2095,6 +2121,47 @@ namespace EuropaEnginePatcher
                     _posCalcLineBreakEnd6 = l[1] + (uint) pattern.Length;
                     break;
 
+                case PatchType.HeartsOfIron2first:
+                    pattern = new byte[]
+                    {
+                        0xC6, 0x84, 0x04, 0x18, 0x01, 0x00, 0x00, 0x20,
+                        0x88, 0x9C, 0x04, 0x19, 0x01, 0x00, 0x00
+                    };
+                    l = BinaryScan(_data, pattern, _posTextSection, _sizeTextSection);
+                    if (l.Count < 2)
+                    {
+                        return false;
+                    }
+                    _posCalcLineBreakEnd1 = l[0] + (uint) pattern.Length;
+                    _posCalcLineBreakEnd2 = l[1] + (uint) pattern.Length;
+
+                    pattern = new byte[]
+                    {
+                        0x8B, 0x4D, 0x40, 0x88, 0x9C, 0x04, 0x29, 0x01,
+                        0x00, 0x00
+                    };
+                    l = BinaryScan(_data, pattern, _posTextSection, _sizeTextSection);
+                    if (l.Count == 0)
+                    {
+                        return false;
+                    }
+                    _posCalcLineBreakEnd3 = l[0] + (uint) pattern.Length;
+
+                    pattern = new byte[]
+                    {
+                        0xC6, 0x84, 0x04, 0x1C, 0x01, 0x00, 0x00, 0x20,
+                        0x51, 0x8B, 0x4D, 0x4C, 0xC6, 0x84, 0x04, 0x21,
+                        0x01, 0x00, 0x00, 0x00
+                    };
+                    l = BinaryScan(_data, pattern, _posTextSection, _sizeTextSection);
+                    if (l.Count < 2)
+                    {
+                        return false;
+                    }
+                    _posCalcLineBreakEnd5 = l[0] + (uint) pattern.Length;
+                    _posCalcLineBreakEnd6 = l[1] + (uint) pattern.Length;
+                    break;
+
                 case PatchType.HeartsOfIron2:
                 case PatchType.HeartsOfIron212:
                 case PatchType.IronCrossHoI2:
@@ -2398,6 +2465,7 @@ namespace EuropaEnginePatcher
 
                 case PatchType.HeartsOfIron2:
                 case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.IronCrossHoI2:
                 case PatchType.ArsenalOfDemocracy104:
                 case PatchType.ArsenalOfDemocracy107:
@@ -2565,6 +2633,7 @@ namespace EuropaEnginePatcher
 
                 case PatchType.HeartsOfIron2:
                 case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.IronCrossHoI2:
                 case PatchType.ArsenalOfDemocracy104:
                 case PatchType.ArsenalOfDemocracy107:
@@ -2749,6 +2818,7 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.Victoria:
+                case PatchType.HeartsOfIron2first:
                     pattern = new byte[]
                     {
                         0x00, 0x00, 0x00, 0x00, 0x8B, 0x55, 0x08, 0x89,
@@ -2832,6 +2902,7 @@ namespace EuropaEnginePatcher
                 case PatchType.Victoria:
                 case PatchType.HeartsOfIron2:
                 case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.IronCrossHoI2:
                     if (l.Count == 0)
                     {
@@ -3011,6 +3082,7 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.HeartsOfIron:
+                case PatchType.HeartsOfIron2first:
                     pattern = new byte[]
                     {
                         0x66, 0xC7, 0x44, 0x24, 0x24, 0x9D, 0x07
@@ -3202,6 +3274,7 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.HeartsOfIron2:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.ArsenalOfDemocracy107:
                     pattern = new byte[]
                     {
@@ -3380,6 +3453,7 @@ namespace EuropaEnginePatcher
                     case PatchType.HeartsOfIron:
                     case PatchType.HeartsOfIron2:
                     case PatchType.HeartsOfIron212:
+                    case PatchType.HeartsOfIron2first:
                     case PatchType.IronCrossHoI2:
                     case PatchType.ArsenalOfDemocracy104:
                     case PatchType.ArsenalOfDemocracy107:
@@ -3410,6 +3484,7 @@ namespace EuropaEnginePatcher
                     case PatchType.HeartsOfIron:
                     case PatchType.HeartsOfIron2:
                     case PatchType.HeartsOfIron212:
+                    case PatchType.HeartsOfIron2first:
                         PatchWindowed();
                         break;
                     case PatchType.IronCrossHoI2:
@@ -3428,6 +3503,7 @@ namespace EuropaEnginePatcher
                     case PatchType.HeartsOfIron:
                     case PatchType.HeartsOfIron2:
                     case PatchType.HeartsOfIron212:
+                    case PatchType.HeartsOfIron2first:
                     case PatchType.IronCrossHoI2:
                         PatchBinkPlay();
                         break;
@@ -3444,6 +3520,7 @@ namespace EuropaEnginePatcher
                     case PatchType.HeartsOfIron:
                     case PatchType.HeartsOfIron2:
                     case PatchType.HeartsOfIron212:
+                    case PatchType.HeartsOfIron2first:
                         PatchNtl();
                         break;
                     case PatchType.IronCrossHoI2:
@@ -3470,6 +3547,7 @@ namespace EuropaEnginePatcher
             {
                 case PatchType.HeartsOfIron2:
                 case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.IronCrossHoI2:
                 case PatchType.ArsenalOfDemocracy:
                 case PatchType.ArsenalOfDemocracy104:
@@ -3602,6 +3680,7 @@ namespace EuropaEnginePatcher
                 {
                     case PatchType.HeartsOfIron2:
                     case PatchType.HeartsOfIron212:
+                    case PatchType.HeartsOfIron2first:
                     case PatchType.IronCrossHoI2:
                     case PatchType.ArsenalOfDemocracy104:
                     case PatchType.ArsenalOfDemocracy107:
@@ -3708,6 +3787,7 @@ namespace EuropaEnginePatcher
                     case PatchType.HeartsOfIron:
                     case PatchType.HeartsOfIron2:
                     case PatchType.HeartsOfIron212:
+                    case PatchType.HeartsOfIron2first:
                     case PatchType.IronCrossHoI2:
                     case PatchType.ArsenalOfDemocracy:
                     case PatchType.ArsenalOfDemocracy104:
@@ -4053,6 +4133,7 @@ namespace EuropaEnginePatcher
                     case PatchType.HeartsOfIron:
                     case PatchType.HeartsOfIron2:
                     case PatchType.HeartsOfIron212:
+                    case PatchType.HeartsOfIron2first:
                     case PatchType.IronCrossHoI2:
                     case PatchType.ArsenalOfDemocracy:
                     case PatchType.ArsenalOfDemocracy104:
@@ -4411,6 +4492,7 @@ namespace EuropaEnginePatcher
                 case PatchType.HeartsOfIron:
                 case PatchType.HeartsOfIron2:
                 case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.IronCrossHoI2:
                 case PatchType.ArsenalOfDemocracy104:
                 case PatchType.DarkestHour102:
@@ -4732,6 +4814,7 @@ namespace EuropaEnginePatcher
 
                 case PatchType.HeartsOfIron2:
                 case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.IronCrossHoI2:
                 case PatchType.ArsenalOfDemocracy104:
                 case PatchType.DarkestHour102:
@@ -4955,6 +5038,7 @@ namespace EuropaEnginePatcher
                 case PatchType.HeartsOfIron:
                 case PatchType.HeartsOfIron2:
                 case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.IronCrossHoI2:
                 case PatchType.ArsenalOfDemocracy104:
                 case PatchType.DarkestHour102:
@@ -5290,6 +5374,7 @@ namespace EuropaEnginePatcher
 
                 case PatchType.HeartsOfIron2:
                 case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.IronCrossHoI2:
                 case PatchType.ArsenalOfDemocracy104:
                 case PatchType.DarkestHour102:
@@ -5514,6 +5599,7 @@ namespace EuropaEnginePatcher
                     case PatchType.HeartsOfIron:
                     case PatchType.HeartsOfIron2:
                     case PatchType.HeartsOfIron212:
+                    case PatchType.HeartsOfIron2first:
                     case PatchType.IronCrossHoI2:
                     case PatchType.ArsenalOfDemocracy104:
                     case PatchType.DarkestHour:
@@ -5660,6 +5746,7 @@ namespace EuropaEnginePatcher
                     case PatchType.HeartsOfIron:
                     case PatchType.HeartsOfIron2:
                     case PatchType.HeartsOfIron212:
+                    case PatchType.HeartsOfIron2first:
                     case PatchType.IronCrossHoI2:
                     case PatchType.ArsenalOfDemocracy104:
                     case PatchType.DarkestHour:
@@ -5983,6 +6070,7 @@ namespace EuropaEnginePatcher
                 case PatchType.EuropaUniversalis2:
                 case PatchType.Victoria:
                 case PatchType.HeartsOfIron:
+                case PatchType.HeartsOfIron2first:
                     PatchByte(_data, offset, 0x8B); // mov ecx,[esp+00000230h]
                     offset++;
                     PatchByte(_data, offset, 0x8C);
@@ -6261,6 +6349,7 @@ namespace EuropaEnginePatcher
 
                 case PatchType.EuropaUniversalis2:
                 case PatchType.HeartsOfIron:
+                case PatchType.HeartsOfIron2first:
                     PatchByte(_data, offset, 0x8B); // mov ecx,[esp+00000230h]
                     offset++;
                     PatchByte(_data, offset, 0x8C);
@@ -6549,6 +6638,7 @@ namespace EuropaEnginePatcher
                 case PatchType.HeartsOfIron:
                 case PatchType.HeartsOfIron2:
                 case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.IronCrossHoI2:
                 case PatchType.ArsenalOfDemocracy104:
                 case PatchType.DarkestHour102:
@@ -6803,6 +6893,8 @@ namespace EuropaEnginePatcher
 
                 case PatchType.EuropaUniversalis2:
                 case PatchType.HeartsOfIron2:
+                case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.ArsenalOfDemocracy104:
                 case PatchType.DarkestHour102:
                 case PatchType.DarkestHour104:
@@ -7240,6 +7332,7 @@ namespace EuropaEnginePatcher
 
                 case PatchType.HeartsOfIron2:
                 case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.IronCrossHoI2:
                 case PatchType.ArsenalOfDemocracy104:
                 case PatchType.ArsenalOfDemocracy107:
@@ -7362,6 +7455,7 @@ namespace EuropaEnginePatcher
 
                 case PatchType.HeartsOfIron2:
                 case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.IronCrossHoI2:
                 case PatchType.ArsenalOfDemocracy104:
                 case PatchType.ArsenalOfDemocracy107:
@@ -7391,6 +7485,7 @@ namespace EuropaEnginePatcher
                     {
                         case PatchType.HeartsOfIron2:
                         case PatchType.HeartsOfIron212:
+                        case PatchType.HeartsOfIron2first:
                         case PatchType.IronCrossHoI2:
                         case PatchType.ArsenalOfDemocracy104:
                             PatchByte(_data, offset, 0xD4);
@@ -7444,6 +7539,7 @@ namespace EuropaEnginePatcher
                     {
                         case PatchType.HeartsOfIron2:
                         case PatchType.HeartsOfIron212:
+                        case PatchType.HeartsOfIron2first:
                         case PatchType.IronCrossHoI2:
                         case PatchType.ArsenalOfDemocracy104:
                             PatchByte(_data, offset, 0xAC);
@@ -7646,6 +7742,7 @@ namespace EuropaEnginePatcher
                 case PatchType.EuropaUniversalis2:
                 case PatchType.Victoria:
                 case PatchType.HeartsOfIron:
+                case PatchType.HeartsOfIron2first:
                     PatchByte(_data, offset, 0x01);
                     break;
 
@@ -7710,6 +7807,7 @@ namespace EuropaEnginePatcher
                 case PatchType.HeartsOfIron:
                 case PatchType.HeartsOfIron2:
                 case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                     PatchByte(_data, _posLimitYear, 0x10);
                     PatchByte(_data, _posLimitYear + 1, 0x27);
                     break;
@@ -7929,6 +8027,7 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.IronCrossHoI2:
                 case PatchType.ArsenalOfDemocracy104:
                 case PatchType.DarkestHour102:
@@ -8018,6 +8117,7 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.HeartsOfIron212:
+                case PatchType.HeartsOfIron2first:
                 case PatchType.IronCrossHoI2:
                 case PatchType.ArsenalOfDemocracy104:
                 case PatchType.DarkestHour102:
@@ -8512,6 +8612,7 @@ namespace EuropaEnginePatcher
         DarkestHour102, // Darkest Hour 1.00-1.02
         DarkestHour104, // Darkest Hour 1.03-1.04
         HeartsOfIron212, // Hearts of Iron 2 1.2
+        HeartsOfIron2first, // Hearts of Iron 2 without expansion
         IronCrossHoI2 // Iron Cross over Hearts of Iron 2
     }
 }
