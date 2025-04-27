@@ -283,6 +283,7 @@ namespace EuropaEnginePatcher
                 case PatchType.HeartsOfIron2:
                 case PatchType.ArsenalOfDemocracy:
                 case PatchType.DarkestHour:
+                case PatchType.ForTheGlory:
                     break;
 
                 default:
@@ -392,7 +393,47 @@ namespace EuropaEnginePatcher
                                    (_data[offset + 3] - '0');
                     break;
 
+                case PatchType.ForTheGlory:
+                    // .FTG 1.2.%s - %s (%s).
+                    pattern = new byte[]
+                    {
+                        0x00, 0x46, 0x54, 0x47, 0x20, 0x31, 0x2E, 0x32,
+                        0x00, 0x25, 0x73, 0x20, 0x2D, 0x20, 0x25, 0x73,
+                        0x20, 0x28, 0x25, 0x73, 0x29, 0x00
+                    };
+                    l = BinaryScan(_data, pattern, 0, (uint) _fileSize);
+                    if (l.Count >= 1)
+                    {
+                        _patchType = PatchType.ForTheGlory120;
+                        AppendLog("PatchType: .ForTheGlory 1.2\n\n");
+                        return true;
+                    }
+                    
+                    // .FTG1.3.db\rebels.txt.
+                    pattern = new byte[]
+                    {
+                        0x00, 0x46, 0x54, 0x47, 0x20, 0x31, 0x2E, 0x33,
+                        0x00, 0x64, 0x62, 0x5C, 0x72, 0x65, 0x62, 0x65,
+                        0x6C, 0x73, 0x2E, 0x74, 0x78, 0x74, 0x00
+                    };
+                    l = BinaryScan(_data, pattern, 0, (uint) _fileSize);
+                    
+                    if (l.Count >= 1)
+                    {
+                        _patchType = PatchType.ForTheGlory;
+                        AppendLog("PatchType: .ForTheGlory\n\n");
+                        return true;
+                    }
+                    // バージョン番号判定に失敗した場合は FTGの最新と仮定した上でパッチ作業を継続する
+                    //
+                    _patchType = PatchType.ForTheGlory;
+                    AppendLog("PatchType: .ForTheGlory Unknown ver\n\n");
+                    return true;
+
                 default:
+                    // 判定をコメントアウトしてfalseを返すだけにする
+                    return false;
+/*
                     // Doomsday Armageddon v X.X
                     pattern = new byte[]
                     {
@@ -408,6 +449,8 @@ namespace EuropaEnginePatcher
                     offset = l[0] + (uint) pattern.Length;
                     _gameVersion = (_data[offset] - '0') * 100 + (_data[offset + 2] - '0') * 10;
                     break;
+                    
+*/
             }
 
             AppendLog("ScanBinary passed\n\n");
@@ -428,12 +471,12 @@ namespace EuropaEnginePatcher
                     else if (_gameVersion <= 120)
                     {
                         _patchType = PatchType.HeartsOfIron212;
-                        AppendLog("PatchType: Hearts of Iron 2 1.2\n\n");
+                        AppendLog("PatchType: Hearts of Iron 2 arma 1.2\n\n");
                     }
                     else
                     {
                         _patchType = PatchType.HeartsOfIron2;
-                        AppendLog("PatchType: Hearts of Iron 2\n\n");
+                        AppendLog("PatchType: Hearts of Iron 2 arma 1.3\n\n");
                     }
                     break;
 
@@ -1205,6 +1248,15 @@ namespace EuropaEnginePatcher
                 case PatchType.ForTheGlory:
                     pattern = new byte[]
                     {
+                        0x8B, 0x45, 0x18, 0x8B, 0x10, 0x8B, 0x4D, 0x18,
+                        0x8B, 0x42, 0x0C, 0xFF, 0xD0, 0x8B, 0x45, 0x0C,
+                        0x8B, 0xE5, 0x5D, 0xC2, 0x18, 0x00
+                    };
+                    break;
+
+                case PatchType.ForTheGlory120:
+                    pattern = new byte[]
+                    {
                         0x8B, 0x55, 0x18, 0x8B, 0x02, 0x8B, 0x4D, 0x18,
                         0x8B, 0x50, 0x0C, 0xFF, 0xD2, 0x8B, 0x45, 0x0C,
                         0x8B, 0xE5, 0x5D, 0xC2, 0x18, 0x00
@@ -1284,6 +1336,14 @@ namespace EuropaEnginePatcher
                     };
                     break;
 
+                case PatchType.ForTheGlory:
+                    pattern = new byte[]
+                    {
+                        0xC7, 0x45, 0xF8, 0x00, 0x00, 0x00, 0x00, 0x8B,
+                        0x45, 0x08, 0x8A, 0x08, 0x88, 0x4D
+                    };
+                    break;
+
                 default:
                     pattern = new byte[]
                     {
@@ -1324,6 +1384,14 @@ namespace EuropaEnginePatcher
                     };
                     break;
 
+                case PatchType.ForTheGlory:
+                    pattern = new byte[]
+                    {
+                        0x8B, 0x45, 0xF8, 0x8B, 0xE5, 0x5D,0xC2, 0x04,
+                        0x00
+                    };
+                    break;
+
                 default:
                     pattern = new byte[]
                     {
@@ -1338,7 +1406,7 @@ namespace EuropaEnginePatcher
             {
                 return false;
             }
-            _posGetTextWidthEnd = l[0] + 3;
+                _posGetTextWidthEnd = l[0] + 3;
             AppendLog("ScanBinary passed\n\n");
 
             return true;
@@ -1553,6 +1621,7 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.ForTheGlory:
+                case PatchType.ForTheGlory120:
                     pattern = new byte[]
                     {
                         0x88, 0x5C, 0x04, 0x14, 0x40, 0x84, 0xDB, 0x0F,
@@ -1987,6 +2056,7 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.ForTheGlory:
+                case PatchType.ForTheGlory120:
                     pattern = new byte[]
                     {
                         0x8D, 0x7C, 0x24, 0x18, 0xC6, 0x44, 0x04, 0x19,
@@ -3420,6 +3490,7 @@ namespace EuropaEnginePatcher
             switch (_patchType)
             {
                 case PatchType.ForTheGlory:
+                case PatchType.ForTheGlory120:
                 case PatchType.ArsenalOfDemocracy:
                 case PatchType.ArsenalOfDemocracy109:
                     PatchIsDebuggerPresent();
@@ -3606,6 +3677,7 @@ namespace EuropaEnginePatcher
             switch (_patchType)
             {
                 case PatchType.ForTheGlory:
+                case PatchType.ForTheGlory120:
                 case PatchType.ArsenalOfDemocracy:
                 case PatchType.ArsenalOfDemocracy109:
                     PatchLong(_data, offset, _addrIsDebuggerPresent,
@@ -3658,7 +3730,7 @@ namespace EuropaEnginePatcher
             PatchLong(_data, offset, _addrVarTextOutDcAddress,
                 $"%02 ${_addrVarTextOutDcAddress:X8} varTextOutDC2Address");
             offset += 4;
-            PatchByte(_data, offset, 0x8B); // mov ecx,[ebp-64h/6Ch/9Ch/+58h]
+            PatchByte(_data, offset, 0x8B); // mov ecx,[ebp -68h/-6Ch/-9Ch/+58h/-0Ch]
             offset++;
             if (_patchType == PatchType.CrusaderKings)
             {
@@ -3693,6 +3765,9 @@ namespace EuropaEnginePatcher
                     case PatchType.ArsenalOfDemocracy:
                         PatchByte(_data, offset, 0x58);
                         break;
+                    case PatchType.ForTheGlory:
+                        PatchByte(_data, offset, _data[_posTextOutStart - 1]); // ここは参照先が+-127バイト以内であることが前提
+                        break;
                     default:
                         PatchByte(_data, offset, 0x98);
                         break;
@@ -3706,13 +3781,13 @@ namespace EuropaEnginePatcher
             offset++;
             PatchByte(_data, offset, 0x0C);
             offset++;
-            if (_patchType == PatchType.ForTheGlory)
+            if ((_patchType == PatchType.ForTheGlory) | (_patchType == PatchType.ForTheGlory120))
             {
-                PatchByte(_data, offset, 0x33); // TODO: アセンブリコード記載
+                PatchByte(_data, offset, 0x33); // xor eax,eax TODO: アセンブリコード記載
                 offset++;
                 PatchByte(_data, offset, 0xC0);
                 offset++;
-                PatchByte(_data, offset, 0x80);
+                PatchByte(_data, offset, 0x80); // cmp byte ptr ds:[edx+13],2E
                 offset++;
                 PatchByte(_data, offset, 0x7A);
                 offset++;
@@ -3720,17 +3795,17 @@ namespace EuropaEnginePatcher
                 offset++;
                 PatchByte(_data, offset, 0x2E);
                 offset++;
-                PatchByte(_data, offset, 0x74);
+                PatchByte(_data, offset, 0x74); // je 
                 offset++;
                 PatchByte(_data, offset, 0x01);
                 offset++;
-                PatchByte(_data, offset, 0x40);
+                PatchByte(_data, offset, 0x40); // inc eax
                 offset++;
-                PatchByte(_data, offset, 0x8B);
+                PatchByte(_data, offset, 0x8B); // mov edx,eax
                 offset++;
                 PatchByte(_data, offset, 0xD0);
                 offset++;
-                PatchByte(_data, offset, 0x80);
+                PatchByte(_data, offset, 0x80); // cmp byte ptr ds:[ecx+414],0
                 offset++;
                 PatchByte(_data, offset, 0xB9);
                 offset++;
@@ -3744,31 +3819,31 @@ namespace EuropaEnginePatcher
                 offset++;
                 PatchByte(_data, offset, 0x00);
                 offset++;
-                PatchByte(_data, offset, 0x74);
+                PatchByte(_data, offset, 0x74); // je 
                 offset++;
                 PatchByte(_data, offset, 0x03);
                 offset++;
-                PatchByte(_data, offset, 0x83);
+                PatchByte(_data, offset, 0x83); // or eax,2
                 offset++;
                 PatchByte(_data, offset, 0xC8);
                 offset++;
                 PatchByte(_data, offset, 0x02);
                 offset++;
-                PatchByte(_data, offset, 0x50);
+                PatchByte(_data, offset, 0x50); // push eax
                 offset++;
-                PatchByte(_data, offset, 0xFF);
+                PatchByte(_data, offset, 0xFF); // push dword ptr ss:[ebp+1C]
                 offset++;
                 PatchByte(_data, offset, 0x75);
                 offset++;
                 PatchByte(_data, offset, 0x1C);
                 offset++;
-                PatchByte(_data, offset, 0x8B);
+                PatchByte(_data, offset, 0x8B); // mov eax,dword ptr ds:[ecx+10]
                 offset++;
                 PatchByte(_data, offset, 0x41);
                 offset++;
                 PatchByte(_data, offset, 0x10);
                 offset++;
-                PatchByte(_data, offset, 0x2B);
+                PatchByte(_data, offset, 0x2B); // sub eax,edx
                 offset++;
                 PatchByte(_data, offset, 0xC2);
             }
@@ -4017,6 +4092,7 @@ namespace EuropaEnginePatcher
             switch (_patchType)
             {
                 case PatchType.ForTheGlory:
+                case PatchType.ForTheGlory120:
                 case PatchType.ArsenalOfDemocracy:
                 case PatchType.ArsenalOfDemocracy109:
                     PatchLong(_data, offset, _addrIsDebuggerPresent,
@@ -4069,7 +4145,7 @@ namespace EuropaEnginePatcher
             PatchLong(_data, offset, _addrVarGetTextWidthAddress,
                 $"%03 ${_addrVarGetTextWidthAddress:X8} varGetTextWidthAddress");
             offset += 4;
-            PatchByte(_data, offset, 0x8B); // mov ecx,[ebp-08h/14h/18h]
+            PatchByte(_data, offset, 0x8B); // mov ecx,[ebp-08h/14h/18h/10h]
             offset++;
             PatchByte(_data, offset, 0x4D);
             offset++;
@@ -4086,6 +4162,9 @@ namespace EuropaEnginePatcher
                 case PatchType.DarkestHour104:
                     PatchByte(_data, offset, 0xE8);
                     break;
+                case PatchType.ForTheGlory:
+                    PatchByte(_data, offset, _data[_posGetTextWidthStart - 1]); // ここは参照先が+-127バイト以内であることが前提
+                    break;
                 default:
                     PatchByte(_data, offset, 0xEC);
                     break;
@@ -4098,7 +4177,7 @@ namespace EuropaEnginePatcher
             offset++;
             PatchByte(_data, offset, 0x0C);
             offset++;
-            if (_patchType == PatchType.ForTheGlory)
+            if ((_patchType == PatchType.ForTheGlory) | (_patchType == PatchType.ForTheGlory120))
             {
                 PatchByte(_data, offset, 0x33); // TODO: アセンブリコード記載
                 offset++;
@@ -4229,7 +4308,7 @@ namespace EuropaEnginePatcher
             offset++;
             PatchByte(_data, offset, 0x10);
             offset++;
-            if (_patchType != PatchType.ForTheGlory)
+            if ((_patchType != PatchType.ForTheGlory) & (_patchType != PatchType.ForTheGlory120))
             {
                 PatchByte(_data, offset, 0x48); // dec eax,eax
                 offset++;
@@ -4242,7 +4321,7 @@ namespace EuropaEnginePatcher
             offset++;
             PatchByte(_data, offset, 0xC2);
             offset++;
-            if (_patchType != PatchType.ForTheGlory)
+            if ((_patchType != PatchType.ForTheGlory) & (_patchType != PatchType.ForTheGlory120))
             {
                 PatchByte(_data, offset, 0x8B); // mov edx,[ecx+0Ch]
                 offset++;
@@ -4413,6 +4492,7 @@ namespace EuropaEnginePatcher
             switch (_patchType)
             {
                 case PatchType.ForTheGlory:
+                case PatchType.ForTheGlory120:
                 case PatchType.ArsenalOfDemocracy:
                 case PatchType.ArsenalOfDemocracy109:
                     PatchLong(_data, offset, _addrIsDebuggerPresent,
@@ -4543,6 +4623,7 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.ForTheGlory:
+                case PatchType.ForTheGlory120:
                     PatchByte(_data, offset, 0x4D); // dec ebp
                     offset++;
                     PatchByte(_data, offset, 0x55); // push ebp
@@ -4733,6 +4814,7 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.ForTheGlory:
+                case PatchType.ForTheGlory120:
                     PatchByte(_data, offset, 0x03); // add ebp,eax
                     offset++;
                     PatchByte(_data, offset, 0xE8);
@@ -5089,6 +5171,7 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.ForTheGlory:
+                case PatchType.ForTheGlory120:
                     PatchByte(_data, offset, 0x8B); // mov ecx,[esp+18h]
                     offset++;
                     PatchByte(_data, offset, 0x4C);
@@ -5287,6 +5370,7 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.ForTheGlory:
+                case PatchType.ForTheGlory120:
                     PatchByte(_data, offset, 0x8B); // mov ecx,[esp+18h]
                     offset++;
                     PatchByte(_data, offset, 0x4C);
@@ -5642,6 +5726,7 @@ namespace EuropaEnginePatcher
                         break;
 
                     case PatchType.ForTheGlory:
+                    case PatchType.ForTheGlory120:
                         PatchByte(_data, offset, 0x4D); // dec ebp
                         offset++;
                         PatchByte(_data, offset, 0x55); // push ebp
@@ -5811,6 +5896,7 @@ namespace EuropaEnginePatcher
                         break;
 
                     case PatchType.ForTheGlory:
+                    case PatchType.ForTheGlory120:
                         PatchByte(_data, offset, 0x03); // add ebp,eax
                         offset++;
                         PatchByte(_data, offset, 0xE8);
@@ -6108,6 +6194,7 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.ForTheGlory:
+                case PatchType.ForTheGlory120:
                     PatchByte(_data, offset, 0x4D); // dec ebp
                     offset++;
                     PatchByte(_data, offset, 0x55); // push ebp
@@ -6409,6 +6496,7 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.ForTheGlory:
+                case PatchType.ForTheGlory120:
                     PatchByte(_data, offset, 0x03); // add ebp,eax
                     offset++;
                     PatchByte(_data, offset, 0xE8);
@@ -6717,6 +6805,7 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.ForTheGlory:
+                case PatchType.ForTheGlory120:
                     PatchByte(_data, offset, 0x8B); // mov esi,[esp+00000238h]
                     offset++;
                     PatchByte(_data, offset, 0xB4);
@@ -7016,6 +7105,7 @@ namespace EuropaEnginePatcher
                     break;
 
                 case PatchType.ForTheGlory:
+                case PatchType.ForTheGlory120:
                     PatchByte(_data, offset, 0x03); // add esi,eax
                     offset++;
                     PatchByte(_data, offset, 0xF0);
@@ -8600,10 +8690,11 @@ namespace EuropaEnginePatcher
         Unknown, // 不明
         CrusaderKings, // Crusader Kings
         EuropaUniversalis2, // Europa Universalis 2
-        ForTheGlory, // For The Glory
+        ForTheGlory120, // For The Glory 1.2
+        ForTheGlory, // For The Glory (latest)
         Victoria, // Victoria
         HeartsOfIron, // Hearts of Iron
-        HeartsOfIron2, // Hearts of Iron 2 1.3-
+        HeartsOfIron2, // Hearts of Iron 2 arma 1.3-
         ArsenalOfDemocracy, // Arsenal of Democracy 1.10-
         ArsenalOfDemocracy104, // Arsenal of Democracy 1.02-1.04
         ArsenalOfDemocracy107, // Arsenal of Democracy 1.05-1.07
@@ -8611,7 +8702,7 @@ namespace EuropaEnginePatcher
         DarkestHour, // Darkest Hour 1.05-
         DarkestHour102, // Darkest Hour 1.00-1.02
         DarkestHour104, // Darkest Hour 1.03-1.04
-        HeartsOfIron212, // Hearts of Iron 2 1.2
+        HeartsOfIron212, // Hearts of Iron 2 arma 1.2
         HeartsOfIron2first, // Hearts of Iron 2 without expansion
         IronCrossHoI2 // Iron Cross over Hearts of Iron 2
     }
